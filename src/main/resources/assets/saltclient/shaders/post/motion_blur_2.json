@@ -1,0 +1,76 @@
+{
+  "targets": [
+    "salt_swap",
+    "salt_blur"
+  ],
+  "passes": [
+    {
+      "name": "box_blur",
+      "intarget": "minecraft:main",
+      "outtarget": "salt_swap",
+      "use_linear_filter": true,
+      "uniforms": [
+        {
+          "name": "BlurDir",
+          "values": [
+            1.0,
+            0.0
+          ],
+          "RadiusMultiplier": 0.08
+        }
+      ]
+    },
+    {
+      "name": "box_blur",
+      "intarget": "salt_swap",
+      "outtarget": "salt_blur",
+      "use_linear_filter": true,
+      "uniforms": [
+        {
+          "name": "BlurDir",
+          "values": [
+            0.0,
+            1.0
+          ],
+          "RadiusMultiplier": 0.08
+        }
+      ]
+    },
+    {
+      "name": "motion_blur_edge",
+      "intarget": "minecraft:main",
+      "outtarget": "salt_swap",
+      "auxtargets": [
+        {
+          "name": "BlurSampler",
+          "id": "salt_blur"
+        }
+      ],
+      "uniforms": [
+        {
+          "name": "EdgeStart",
+          "values": [
+            0.1
+          ]
+        },
+        {
+          "name": "EdgeEnd",
+          "values": [
+            0.26
+          ]
+        },
+        {
+          "name": "BlendStrength",
+          "values": [
+            0.5
+          ]
+        }
+      ]
+    },
+    {
+      "name": "blit",
+      "intarget": "salt_swap",
+      "outtarget": "minecraft:main"
+    }
+  ]
+}

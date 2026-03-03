@@ -1,0 +1,29 @@
+{
+  "required": true,
+  "package": "com.saltclient.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "BackgroundRendererMixin",
+    "CameraMixin",
+    "ChatHudMixin",
+    "ClientPlayNetworkHandlerMixin",
+    "EntityMixin",
+    "FramebufferAccessor",
+    "GameRendererInvoker",
+    "GameRendererMixin",
+    "GameOptionsAccessor",
+    "InGameHudMixin",
+    "InGameOverlayRendererMixin",
+    "MinecraftClientAccessor",
+    "MinecraftClientMixin",
+    "MouseMixin",
+    "ScreenMixin",
+    "ScreenshotRecorderMixin",
+    "SoundManagerAccessor",
+    "SoundSystemAccessor",
+    "TitleScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
