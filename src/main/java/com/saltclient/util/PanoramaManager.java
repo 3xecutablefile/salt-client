@@ -77,7 +77,9 @@ public final class PanoramaManager {
             NativeImage image = NativeImage.read(in);
             NativeImageBackedTexture next = new NativeImageBackedTexture(image);
 
-            Identifier id = mc.getTextureManager().registerDynamicTexture("salt_panorama", next);
+            Identifier id = Identifier.of("saltclient", "panorama");
+            mc.getTextureManager().registerTexture(id, next);
+            textureId = id;
 
             if (texture != null) {
                 try {

@@ -8,6 +8,7 @@ import com.saltclient.setting.IntSetting;
 import com.saltclient.state.SaltState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -77,7 +78,7 @@ public final class DynamicCrosshairModule extends Module {
         boolean targetingMob = mc.targetedEntity instanceof MobEntity;
 
         if ((playerIndicator.getValue() && targetingPlayer) || (mobIndicator.getValue() && targetingMob)) {
-            ctx.drawTexture(MOD_ICONS, cx - 4, cy - 4, 0, 0, 9, 9, 64, 64);
+            ctx.drawTexture(id -> RenderLayer.getGuiTextured(id), MOD_ICONS, cx - 4, cy - 4, 0, 0, 9, 9, 64, 64);
         }
 
         if (elytraIndicator.getValue() && isWearingElytra(mc)) {
@@ -86,7 +87,7 @@ public final class DynamicCrosshairModule extends Module {
             int iconH = (int) (11 * scale);
             int x = cx - iconW / 2;
             int y = cy - 16;
-            ctx.drawTexture(MOD_ICONS, x, y, 10, 0, 14, 11, 64, 64);
+            ctx.drawTexture(id -> RenderLayer.getGuiTextured(id), MOD_ICONS, x, y, 10, 0, 14, 11, 64, 64);
         }
 
         if (hitMarker.getValue() && hitMarkerDisplayTicks > 0) {
@@ -99,7 +100,7 @@ public final class DynamicCrosshairModule extends Module {
     }
 
     private void drawDefaultHitMarker(DrawContext ctx, int cx, int cy) {
-        ctx.drawTexture(MOD_ICONS, cx - 5, cy - 5, 24, 0, 10, 10, 64, 64);
+        ctx.drawTexture(id -> RenderLayer.getGuiTextured(id), MOD_ICONS, cx - 5, cy - 5, 24, 0, 10, 10, 64, 64);
     }
 
     private void drawFadeHitMarker(DrawContext ctx, int cx, int cy) {
@@ -107,7 +108,7 @@ public final class DynamicCrosshairModule extends Module {
         float fadeProgress = Math.min(1.0f, (float) this.hitMarkerDisplayTicks / fadeDuration);
         float alpha = fadeProgress;
 
-        ctx.drawTexture(MOD_ICONS, cx - 5, cy - 5, 24, 0, 10, 10, 64, 64);
+        ctx.drawTexture(id -> RenderLayer.getGuiTextured(id), MOD_ICONS, cx - 5, cy - 5, 24, 0, 10, 10, 64, 64);
     }
 
     private void drawAnimatedHitMarker(DrawContext ctx, int cx, int cy) {
@@ -120,7 +121,7 @@ public final class DynamicCrosshairModule extends Module {
         boolean completed = this.hitMarkerDisplayTicks >= totalDuration;
         int frameIndex = completed ? (numFrames - 1) : Math.min((this.hitMarkerDisplayTicks / frameDuration), numFrames - 1);
 
-        ctx.drawTexture(MOD_ICONS, cx - 5, cy - 5, 24, frameV[frameIndex], 10, 10, 64, 64);
+        ctx.drawTexture(id -> RenderLayer.getGuiTextured(id), MOD_ICONS, cx - 5, cy - 5, 24, frameV[frameIndex], 10, 10, 64, 64);
     }
 
     private boolean isWearingElytra(MinecraftClient mc) {

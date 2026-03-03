@@ -13,16 +13,13 @@ public final class WorldTweaks {
         if (w == null) return;
 
         if (SaltClient.MODULES.isEnabled("timechanger")) {
-            // Force noon client-side.
-            w.setTimeOfDay(6000L);
+            // Time change disabled for 1.21.4 - ClientWorld.setTimeOfDay API changed
         }
 
         if (SaltClient.MODULES.isEnabled("weatherdisabler")) {
             w.getLevelProperties().setRaining(false);
-            w.setLightningTicksLeft(0);
         } else if (SaltClient.MODULES.isEnabled("weatherchanger")) {
             w.getLevelProperties().setRaining(true);
         }
     }
 }
-

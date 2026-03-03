@@ -8,7 +8,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.GraphicsMode;
-import net.minecraft.client.option.ParticlesMode;
 import net.minecraft.client.option.SimpleOption;
 import net.minecraft.client.render.ChunkBuilderMode;
 import net.minecraft.client.util.Window;
@@ -31,7 +30,6 @@ public final class OptionTweaks {
     private static CloudRenderMode baseClouds;
     private static GraphicsMode baseGraphics;
     private static boolean baseAo;
-    private static ParticlesMode baseParticles;
     private static boolean baseEntityShadows;
     private static int baseMipmap;
     private static int baseBiomeBlend;
@@ -79,7 +77,6 @@ public final class OptionTweaks {
         CloudRenderMode clouds = baseClouds;
         GraphicsMode graphics = baseGraphics;
         boolean ao = baseAo;
-        ParticlesMode particles = baseParticles;
         boolean entityShadows = baseEntityShadows;
         int mipmap = baseMipmap;
         int biomeBlend = baseBiomeBlend;
@@ -104,7 +101,6 @@ public final class OptionTweaks {
             ao = false;
             clouds = CloudRenderMode.OFF;
             entityShadows = false;
-            particles = ParticlesMode.MINIMAL;
             mipmap = 0;
             biomeBlend = 0;
             viewDistance = Math.min(viewDistance, 6);
@@ -122,13 +118,10 @@ public final class OptionTweaks {
             switch (lvl) {
                 case LITE -> {
                     // Cosmetic only — no distance changes.
-                    particles = ParticlesMode.DECREASED;
                     clouds = CloudRenderMode.FAST;
                 }
                 case BALANCED -> {
                     // Default: good FPS gain with minimal visual impact.
-                    particles = ParticlesMode.DECREASED;
-                    clouds = CloudRenderMode.FAST;
                     viewDistance = Math.min(viewDistance, Math.max(4, baseViewDistance - 2));
                     entityDistanceScaling = Math.min(entityDistanceScaling, 0.75);
                     biomeBlend = 0;
@@ -136,8 +129,6 @@ public final class OptionTweaks {
                 case MAX -> {
                     // Aggressive: fast graphics, no mipmaps, trimmed distances.
                     graphics = GraphicsMode.FAST;
-                    particles = ParticlesMode.MINIMAL;
-                    clouds = CloudRenderMode.OFF;
                     viewDistance = Math.min(viewDistance, Math.max(4, baseViewDistance - 2));
                     entityDistanceScaling = Math.min(entityDistanceScaling, 0.5);
                     mipmap = Math.min(mipmap, 1);
@@ -149,7 +140,6 @@ public final class OptionTweaks {
         // Individual toggles
         if (SaltClient.MODULES.isEnabled("clouddisabler")) clouds = CloudRenderMode.OFF;
         if (SaltClient.MODULES.isEnabled("shadowdisabler")) entityShadows = false;
-        if (SaltClient.MODULES.isEnabled("particlereducer")) particles = ParticlesMode.MINIMAL;
         if (SaltClient.MODULES.isEnabled("fastlighting")) ao = false;
         if (SaltClient.MODULES.isEnabled("entityculling")) entityDistanceScaling = Math.min(entityDistanceScaling, 0.5);
         if (SaltClient.MODULES.isEnabled("chunkculling")) viewDistance = Math.min(viewDistance, Math.max(2, baseViewDistance - 4));
@@ -214,7 +204,6 @@ public final class OptionTweaks {
         set(o.getCloudRenderMode(), clouds);
         set(o.getGraphicsMode(), graphics);
         set(o.getAo(), ao);
-        set(o.getParticles(), particles);
         set(o.getEntityShadows(), entityShadows);
         set(o.getMipmapLevels(), mipmap);
         set(o.getBiomeBlendRadius(), biomeBlend);
@@ -327,7 +316,6 @@ public final class OptionTweaks {
         int current = o.getMaxFps().getValue();
         if (current != target) {
             o.getMaxFps().setValue(target);
-            w.setFramerateLimit(target);
         }
     }
 
@@ -338,7 +326,6 @@ public final class OptionTweaks {
         baseClouds = o.getCloudRenderMode().getValue();
         baseGraphics = o.getGraphicsMode().getValue();
         baseAo = o.getAo().getValue();
-        baseParticles = o.getParticles().getValue();
         baseEntityShadows = o.getEntityShadows().getValue();
         baseMipmap = o.getMipmapLevels().getValue();
         baseBiomeBlend = o.getBiomeBlendRadius().getValue();

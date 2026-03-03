@@ -4,19 +4,34 @@
   "version": "${version}",
   "name": "Salt Client",
   "description": "A lightweight client-side HUD/utility mod for Fabric 1.21.x (Pojav-friendly).",
-  "authors": ["syntexdevlol-ai"],
+  "authors": ["syntexdevlol-ai", "LightFreecs"],
   "license": "MIT",
   "environment": "client",
   "entrypoints": {
-    "client": ["com.saltclient.SaltClient"]
+    "client": [
+      "com.saltclient.SaltClient",
+      "org.lightfreecs.client.MCPVPClient"
+    ],
+    "main": [
+      "org.lightfreecs.MCPVP"
+    ],
+    "fabric-datagen": [
+      "org.lightfreecs.client.MCPVPDataGenerator"
+    ],
+    "client-model-loading": [
+      "org.lightfreecs.client.ModelLoaderPlugin"
+    ]
   },
   "mixins": [
-    "saltclient.mixins.json"
+    "saltclient.mixins.json",
+    "mcpvp.mixins.json",
+    "mcpvp.client.mixins.json"
   ],
+  "accessWidener": "mcpvp.accesswidener",
   "depends": {
-    "fabricloader": ">=0.16.5",
+    "fabricloader": ">=0.16.9",
     "fabric-api": "*",
-    "minecraft": "1.21.x",
+    "minecraft": "1.21.4",
     "java": ">=21"
   }
 }

@@ -51,9 +51,7 @@ public abstract class TitleScreenMixin extends Screen {
         if (GuiSettings.customPanoramaEnabled()) {
             Identifier texture = PanoramaManager.currentTexture();
             if (texture != null) {
-                ctx.setShaderColor(1f, 1f, 1f, 0.55f);
-                ctx.drawTexture(texture, 0, 0, 0, 0, this.width, this.height, this.width, this.height);
-                ctx.setShaderColor(1f, 1f, 1f, 1f);
+                ctx.drawTexture((id) -> net.minecraft.client.render.RenderLayer.getGuiTextured(id), texture, 0, 0, 0, 0, this.width, this.height, this.width, this.height);
             }
         }
 

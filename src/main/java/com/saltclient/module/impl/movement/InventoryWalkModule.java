@@ -18,8 +18,7 @@ public final class InventoryWalkModule extends Module {
         if (s == null) return;
         if (s instanceof ChatScreen) return;
 
-        // Vanilla stops updating input while screens are open. We keep it ticking.
-        mc.player.input.tick(mc.player.shouldSlowDown(), 1.0f);
+        // Vanilla stops updating input while screens are open. Movement keys still work.
     }
 }
 

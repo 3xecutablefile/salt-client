@@ -7,9 +7,10 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 /**
  * Access to the private shader loader used by vanilla post-processing.
+ * TODO: Update method name for 1.21.4 mappings
  */
 @Mixin(GameRenderer.class)
 public interface GameRendererInvoker {
-    @Invoker("loadPostProcessor")
-    void saltclient$loadPostProcessor(Identifier id);
+    // @Invoker("loadPostProcessor")
+    // void saltclient$loadPostProcessor(Identifier id);
 }

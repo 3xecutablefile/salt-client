@@ -6,7 +6,6 @@ import com.saltclient.setting.BoolSetting;
 import com.saltclient.setting.IntSetting;
 import com.saltclient.mixin.FramebufferAccessor;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gl.SimpleFramebuffer;
@@ -36,16 +35,8 @@ public final class MotionBlurModule extends Module {
 
     public MotionBlurModule() {
         super("motionblur", "MotionBlur", "Smooth Lunar-style camera motion blur.", ModuleCategory.VISUAL, true);
-        this.strength = addSetting(new IntSetting(
-            "strength", "Strength",
-            "Blur intensity.",
-            9, 1, 10, 1
-        ));
-        this.velocityBased = addSetting(new BoolSetting(
-            "velocityBased", "Velocity Based",
-            "Scale blur with camera speed.",
-            false
-        ));
+        this.strength = addSetting(new IntSetting("strength", "Strength", "Blur intensity.", 9, 1, 10, 1));
+        this.velocityBased = addSetting(new BoolSetting("velocityBased", "Velocity Based", "Scale blur with camera speed.", false));
     }
 
     @Override
@@ -93,20 +84,8 @@ public final class MotionBlurModule extends Module {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderColor(1f, 1f, 1f, alpha);
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.setShaderTexture(0, glTextureId);
         RenderSystem.depthMask(false);
-
-        RenderSystem.backupProjectionMatrix();
-        RenderSystem.setProjectionMatrix(
-            new Matrix4f().setOrtho(0f, w, h, 0f, 1000f, 3000f),
-            VertexSorter.BY_Z
-        );
-        Matrix4fStack mv = RenderSystem.getModelViewStack();
-        mv.pushMatrix();
-        mv.identity();
-        mv.translate(0f, 0f, -2000f);
-        RenderSystem.applyModelViewMatrix();
 
         Tessellator tess = Tessellator.getInstance();
         var buf = tess.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
@@ -116,9 +95,6 @@ public final class MotionBlurModule extends Module {
         buf.vertex(0, h, 0).texture(0f, 0f);
         BufferRenderer.drawWithGlobalProgram(buf.end());
 
-        mv.popMatrix();
-        RenderSystem.applyModelViewMatrix();
-        RenderSystem.restoreProjectionMatrix();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         RenderSystem.depthMask(true);
         RenderSystem.disableBlend();
@@ -132,12 +108,12 @@ public final class MotionBlurModule extends Module {
             return smoothedAlpha;
         }
 
-        float yaw   = mc.player.getYaw();
+        float yaw = mc.player.getYaw();
         float pitch = mc.player.getPitch();
 
         float dy = Math.abs(MathHelper.wrapDegrees(yaw - prevYaw));
         float dp = Math.abs(pitch - prevPitch);
-        prevYaw   = yaw;
+        prevYaw = yaw;
         prevPitch = pitch;
 
         float targetAlpha = MathHelper.clamp(((dy + dp) / 10.0f) * maxAlpha, 0f, maxAlpha);
@@ -150,7 +126,7 @@ public final class MotionBlurModule extends Module {
 
     private void syncAngles(MinecraftClient mc) {
         if (mc != null && mc.player != null) {
-            prevYaw   = mc.player.getYaw();
+            prevYaw = mc.player.getYaw();
             prevPitch = mc.player.getPitch();
         }
     }
@@ -159,9 +135,9 @@ public final class MotionBlurModule extends Module {
         if (prevBuf != null && w == bufW && h == bufH) return true;
         try {
             releaseBuffers();
-            prevBuf = new SimpleFramebuffer(w, h, true, MinecraftClient.IS_SYSTEM_MAC);
+            prevBuf = new SimpleFramebuffer(w, h, true);
             prevBuf.setClearColor(0f, 0f, 0f, 0f);
-            prevBuf.clear(MinecraftClient.IS_SYSTEM_MAC);
+            prevBuf.clear();
             bufW = w;
             bufH = h;
             return true;

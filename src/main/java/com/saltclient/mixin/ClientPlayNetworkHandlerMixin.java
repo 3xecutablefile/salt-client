@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public final class ClientPlayNetworkHandlerMixin {
     @Inject(method = "onWorldTimeUpdate", at = @At("TAIL"))
     private void salt_onWorldTimeUpdate(WorldTimeUpdateS2CPacket packet, CallbackInfo ci) {
-        ServerTpsTracker.onWorldTimeUpdate(packet.getTime());
+        ServerTpsTracker.onWorldTimeUpdate(packet.time());
     }
 }
-

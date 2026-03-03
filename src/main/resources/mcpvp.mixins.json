@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.lightfreecs.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "GameMenuMixin",
+    "InGameHudMixin",
+    "TitleScreenMixin",
+    "EntityRendererMixin",
+    "AbstractClientPlayerEntityMixin",
+    "ChatMixin",
+    "WorldCaptureMixin",
+    "HandledScreenMixin",
+    "ItemRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
