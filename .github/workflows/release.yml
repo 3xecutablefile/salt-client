@@ -17,9 +17,12 @@ permissions:
   contents: write
 
 jobs:
-  create_tag:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+  prepare_release:
     runs-on: ubuntu-latest
+
+    outputs:
+      tag: ${{ steps.prepare.outputs.tag }}
+      should_release: ${{ steps.prepare.outputs.should_release }}
 
     steps:
       - name: Checkout repository
@@ -27,26 +30,53 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create and push version tag
+      - name: Resolve tag and prepare release
+        id: prepare
         run: |
-          git fetch --tags --force
-          VERSION="$(grep '^mod_version=' gradle.properties | cut -d'=' -f2)"
-          if [ -z "$VERSION" ]; then
-            echo "mod_version is missing in gradle.properties."
-            exit 1
+          EVENT="${{ github.event_name }}"
+          REF="${GITHUB_REF}"
+          TAG=""
+
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+            if [ -z "$TAG" ]; then
+              echo "workflow_dispatch requires a tag input."
+              exit 1
+            fi
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+          elif [[ "$REF" == refs/tags/v* ]]; then
+            TAG="${GITHUB_REF_NAME}"
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+          elif [ "$REF" = "refs/heads/main" ]; then
+            git fetch --tags --force
+            VERSION="$(grep '^mod_version=' gradle.properties | cut -d'=' -f2)"
+            if [ -z "$VERSION" ]; then
+              echo "mod_version is missing in gradle.properties."
+              exit 1
+            fi
+
+            TAG="v$VERSION"
+            if git rev-parse "$TAG" >/dev/null 2>&1; then
+              echo "Tag $TAG already exists. Skipping release on this main push."
+              echo "should_release=false" >> "$GITHUB_OUTPUT"
+            else
+              git tag "$TAG"
+              git push origin "$TAG"
+              echo "Created and pushed tag $TAG."
+              echo "should_release=true" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "Event does not require release."
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
           fi
 
-          TAG="v$VERSION"
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists. Skipping."
-            exit 0
+          if [ -n "$TAG" ]; then
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           fi
-
-          git tag "$TAG"
-          git push origin "$TAG"
 
   release:
-    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v') }}
+    needs: prepare_release
+    if: ${{ needs.prepare_release.outputs.should_release == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -55,20 +85,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Resolve release tag
-        id: release_tag
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "value=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "value=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Verify tag exists
-        run: git rev-parse "${{ steps.release_tag.outputs.value }}" >/dev/null
+        run: git rev-parse "${{ needs.prepare_release.outputs.tag }}" >/dev/null
 
       - name: Checkout release tag
-        run: git checkout "${{ steps.release_tag.outputs.value }}"
+        run: git checkout "${{ needs.prepare_release.outputs.tag }}"
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -96,7 +117,7 @@ jobs:
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          github-tag: ${{ steps.release_tag.outputs.value }}
+          github-tag: ${{ needs.prepare_release.outputs.tag }}
           modrinth-id: 3VJYuZ6G
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: build/libs/!(*-@(dev|sources|javadoc)).jar
