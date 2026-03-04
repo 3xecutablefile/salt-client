@@ -12,7 +12,6 @@ import com.saltclient.module.impl.chat.EmoteMenuModule;
 import com.saltclient.module.impl.chat.GlobalChatModule;
 import com.saltclient.module.impl.movement.AutoSprintModule;
 import com.saltclient.module.impl.movement.ElytraSwapModule;
-import com.saltclient.module.impl.movement.InventoryWalkModule;
 import com.saltclient.module.impl.misc.AutoRespawnModule;
 import com.saltclient.module.impl.misc.GuiModule;
 import com.saltclient.module.impl.misc.FontSelectorModule;
@@ -190,7 +189,6 @@ public final class ModuleManager {
         register(new ToggleModule("soundengineoptimizer", "SoundEngineOptimizer", "Disable some audio features.", ModuleCategory.PERFORMANCE));
 
         register(new ElytraSwapModule());
-        register(new InventoryWalkModule());
         register(new ToggleModule("togglesprint", "ToggleSprint", "Enable vanilla toggle sprint option.", ModuleCategory.MOVEMENT));
         register(new AutoSprintModule());
         register(new ToggleModule("togglesneak", "ToggleSneak", "Enable vanilla toggle sneak option.", ModuleCategory.MOVEMENT));

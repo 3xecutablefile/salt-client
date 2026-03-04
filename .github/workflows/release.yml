@@ -1,44 +1,102 @@
-name: Build Salt Client 1.1.6
+name: Build, Release, Publish
 
 on:
-  workflow_dispatch:
   push:
+    branches:
+      - main
     tags:
-      - "v1.1.6"
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to release (for example: v1.1.7)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
 
 jobs:
-  build:
+  create_tag:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create and push version tag
+        run: |
+          git fetch --tags --force
+          VERSION="$(grep '^mod_version=' gradle.properties | cut -d'=' -f2)"
+          if [ -z "$VERSION" ]; then
+            echo "mod_version is missing in gradle.properties."
+            exit 1
+          fi
+
+          TAG="v$VERSION"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists. Skipping."
+            exit 0
+          fi
+
+          git tag "$TAG"
+          git push origin "$TAG"
+
+  release:
+    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve release tag
+        id: release_tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify tag exists
+        run: git rev-parse "${{ steps.release_tag.outputs.value }}" >/dev/null
+
+      - name: Checkout release tag
+        run: git checkout "${{ steps.release_tag.outputs.value }}"
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-      - name: Grant execute permission for gradlew
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Ensure Gradle wrapper is executable
         run: chmod +x gradlew
+
       - name: Build
         run: ./gradlew --no-daemon build
-      - name: Collect artifacts
+
+      - name: Validate Modrinth configuration
         run: |
-          mkdir -p out
-          SRC=build/libs/salt-client-${{ github.ref_name == 'v1.1.6' && '1.1.6' || '1.1.6' }}.jar
-          cp "$SRC" out/salt-client.1.21_1.1.6.jar
-          cp "$SRC" out/salt-client.1.21.1_1.1.6.jar
-          cp "$SRC" out/salt-client.1.21.4_1.1.6.jar
-          cp "$SRC" out/salt-client.1.21.11_1.1.6.jar
-      - name: Upload
-        uses: actions/upload-artifact@v4
+          if [ -z "${{ secrets.MODRINTH_TOKEN }}" ]; then
+            echo "Repository secret MODRINTH_TOKEN is missing."
+            exit 1
+          fi
+
+      - name: Publish GitHub release and Modrinth
+        uses: Kir-Antipov/mc-publish@v3.3
         with:
-          name: salt-client-1.1.6-bundles
-          path: out/*
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-tag: ${{ steps.release_tag.outputs.value }}
+          modrinth-id: 3VJYuZ6G
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: build/libs/!(*-@(dev|sources|javadoc)).jar
